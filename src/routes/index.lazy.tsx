@@ -1,20 +1,15 @@
-import { createLazyFileRoute } from "@tanstack/react-router";
-import {
-  Button,
-  Checkbox,
-  PasswordInput,
-  Space,
-  Switch,
-  Title,
-} from "@mantine/core";
+import { createLazyFileRoute, useNavigate } from "@tanstack/react-router";
+import { Button, Checkbox, PasswordInput, Space, Title } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { apiRequest } from "../utils/apiRequest.ts";
+import { storage } from "../utils/storage.ts";
 
 export const Route = createLazyFileRoute("/")({
   component: Index,
 });
 
 function Index() {
+  const navigate = useNavigate({ from: "/" });
   const form = useForm({
     initialValues: {
       clientId: "",
@@ -35,12 +30,17 @@ function Index() {
   }) => {
     apiRequest({
       method: "GET",
-      path: "/api/offramp/limits?country=NG&type=bank",
+      path: "/api/offramp/countries",
       clientId: values.clientId,
       secret: values.secret,
       isDev: values.sandbox,
-    }).then((value) => {
-      console.log(value);
+    }).then(() => {
+      storage.setSecret(values.secret);
+      storage.setClientId(values.clientId);
+      storage.setIsDev(values.sandbox);
+      navigate({
+        to: "/offer",
+      });
     });
   };
   return (
