@@ -1,6 +1,14 @@
 import { createLazyFileRoute } from "@tanstack/react-router";
-import { Button, PasswordInput, Space, Title } from "@mantine/core";
+import {
+  Button,
+  Checkbox,
+  PasswordInput,
+  Space,
+  Switch,
+  Title,
+} from "@mantine/core";
 import { useForm } from "@mantine/form";
+import { apiRequest } from "../utils/apiRequest.ts";
 
 export const Route = createLazyFileRoute("/")({
   component: Index,
@@ -11,6 +19,7 @@ function Index() {
     initialValues: {
       clientId: "",
       secret: "",
+      sandbox: true,
     },
 
     validate: {
@@ -19,8 +28,20 @@ function Index() {
         value.trim().length <= 0 && "Client Secret is required",
     },
   });
-  const onSubmit = (values: { clientId: string; secret: string }) => {
-    console.log(values);
+  const onSubmit = (values: {
+    clientId: string;
+    secret: string;
+    sandbox: boolean;
+  }) => {
+    apiRequest({
+      method: "GET",
+      path: "/api/offramp/limits?country=NG&type=bank",
+      clientId: values.clientId,
+      secret: values.secret,
+      isDev: values.sandbox,
+    }).then((value) => {
+      console.log(value);
+    });
   };
   return (
     <form onSubmit={form.onSubmit(onSubmit)}>
@@ -37,6 +58,15 @@ function Index() {
         description="Find it in the merchant dashbaord"
         {...form.getInputProps("secret")}
       />
+      <Space h="xs" />
+      <div>
+        <Checkbox
+          label="Sandbox"
+          {...form.getInputProps("sandbox", {
+            type: "checkbox",
+          })}
+        />
+      </div>
       <Space h="xl" />
       <Button type="submit" fullWidth disabled={!form.isValid()}>
         Save
