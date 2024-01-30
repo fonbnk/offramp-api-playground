@@ -32,7 +32,14 @@ export const apiRequest = async <T>({
     body: JSON.stringify(body),
   });
   if (!response.ok) {
-    throw new Error(`Request failed with status ${response.status}`);
+    let error;
+    try {
+      const errorResponse = await response.json();
+      error = new Error(errorResponse.message);
+    } catch (e) {
+      error = new Error(`Request failed with status ${response.status}`);
+    }
+    throw error;
   }
   return response.json() as Promise<T>;
 };

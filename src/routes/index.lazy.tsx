@@ -1,8 +1,9 @@
 import { createLazyFileRoute, useNavigate } from "@tanstack/react-router";
 import { Button, Checkbox, PasswordInput, Space, Title } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import { apiRequest } from "../utils/apiRequest.ts";
 import { storage } from "../utils/storage.ts";
+import { api } from "../api.ts";
+import { notifications } from "@mantine/notifications";
 
 export const Route = createLazyFileRoute("/")({
   component: Index,
@@ -12,9 +13,12 @@ function Index() {
   const navigate = useNavigate({ from: "/" });
   const form = useForm({
     initialValues: {
-      clientId: "",
-      secret: "",
-      sandbox: true,
+      clientId: storage.getClientId() || "",
+      secret: storage.getSecret() || "",
+      sandbox:
+        typeof storage.getIsDev() === "boolean"
+          ? (storage.getIsDev() as boolean)
+          : true,
     },
 
     validate: {
@@ -28,20 +32,27 @@ function Index() {
     secret: string;
     sandbox: boolean;
   }) => {
-    apiRequest({
-      method: "GET",
-      path: "/api/offramp/countries",
-      clientId: values.clientId,
-      secret: values.secret,
-      isDev: values.sandbox,
-    }).then(() => {
-      storage.setSecret(values.secret);
-      storage.setClientId(values.clientId);
-      storage.setIsDev(values.sandbox);
-      navigate({
-        to: "/offer",
+    api
+      .getCounties({
+        clientId: values.clientId,
+        secret: values.secret,
+        isDev: values.sandbox,
+      })
+      .then(() => {
+        storage.setSecret(values.secret);
+        storage.setClientId(values.clientId);
+        storage.setIsDev(values.sandbox);
+        navigate({
+          to: "/offer",
+        });
+      })
+      .catch((e) => {
+        notifications.show({
+          title: "Failed to verify credentials",
+          message: e?.message || "Something went wrong",
+          color: "red",
+        });
       });
-    });
   };
   return (
     <form onSubmit={form.onSubmit(onSubmit)}>
