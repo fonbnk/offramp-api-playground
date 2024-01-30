@@ -49,11 +49,15 @@ const getLimits = async (
 };
 
 const getBestOffer = async (
-  params: CommonRequestParams & { type: OfframpType; country: string },
+  params: CommonRequestParams & {
+    type: OfframpType;
+    country: string;
+    amount?: number;
+  },
 ) => {
   return apiRequest<Offer>({
     method: "GET",
-    path: `/api/offramp/best-offer?type=${params.type}&country=${params.country}`,
+    path: `/api/offramp/best-offer?type=${params.type}&country=${params.country}&amount=${params.amount}`,
     clientId: params.clientId,
     secret: params.secret,
     isDev: params.isDev,

@@ -1,6 +1,7 @@
 export type Country = {
   countryIsoCode: string;
   name: string;
+  currencyIsoCode: string;
 };
 
 export enum Network {
