@@ -22,7 +22,7 @@ const queryClient = new QueryClient({
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <MantineProvider defaultColorScheme="dark">
+      <MantineProvider>
         <Notifications />
         <RouterProvider router={router} />
       </MantineProvider>
