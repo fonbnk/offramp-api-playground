@@ -17,6 +17,7 @@ import { notifications } from "@mantine/notifications";
 import { useApiCredentials } from "../hooks/useApiCredentials.ts";
 import { storage } from "../utils/storage.ts";
 import { Layout } from "../components/Layout";
+import { useEffect } from "react";
 
 type FormValues = {
   wallet: string;
@@ -55,6 +56,11 @@ function Index() {
     queryKey: ["countries"],
     queryFn: () => api.getCounties(credentials),
   });
+  useEffect(() => {
+    if (countriesQuery.data?.length && !form.values.country) {
+      form.setFieldValue("country", countriesQuery.data[0].countryIsoCode);
+    }
+  }, [countriesQuery.data, form.values.country, form]);
   const bestOfferQuery = useQuery({
     queryKey: [
       "best-offer",
@@ -141,6 +147,24 @@ function Index() {
           {...form.getInputProps("amount")}
         />
         <Space h="sm" />
+        <Select
+          label="Network"
+          disabled={!walletsQuery.data?.length}
+          data={
+            walletsQuery.data
+              ? walletsQuery.data.map((i) => ({
+                  value: i.network + ":" + i.asset,
+                  label: i.network + " " + i.asset,
+                }))
+              : []
+          }
+          {...form.getInputProps("wallet")}
+        />
+        <Space h="sm" />
+        <Input.Wrapper label="Address" {...form.getInputProps("address")}>
+          <Input {...form.getInputProps("address")} />
+        </Input.Wrapper>
+        <Space h="sm" />
         {bestOfferQuery.isLoading && !bestOfferQuery.data && (
           <div>
             <Skeleton height={40} mt={10} radius="md" />
@@ -163,9 +187,9 @@ function Index() {
           <div>
             <div>
               <Text>Will receive:</Text>
-              <Text size="xl" fw={700}>
+              <span className="font-bold text-3xl">
                 {amountFiat} {selectedCountry?.currencyIsoCode}
-              </Text>
+              </span>
             </div>
             <Space h="xl" />
             {Object.keys(bestOfferQuery.data.requiredFields).length && (
@@ -196,26 +220,6 @@ function Index() {
                 );
               },
             )}
-            <Space h="xl" />
-            <Title order={4}>Your wallet details</Title>
-            <Space h="md" />
-            <Select
-              label="Network"
-              disabled={!walletsQuery.data?.length}
-              data={
-                walletsQuery.data
-                  ? walletsQuery.data.map((i) => ({
-                      value: i.network + ":" + i.asset,
-                      label: i.network + " " + i.asset,
-                    }))
-                  : []
-              }
-              {...form.getInputProps("wallet")}
-            />
-            <Space h="sm" />
-            <Input.Wrapper label="Address" {...form.getInputProps("address")}>
-              <Input {...form.getInputProps("address")} />
-            </Input.Wrapper>
             <Space h="md" />
             <Button
               type="submit"

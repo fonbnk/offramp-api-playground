@@ -1,5 +1,5 @@
 import { createLazyFileRoute, useNavigate } from "@tanstack/react-router";
-import { Button, Checkbox, PasswordInput, Space } from "@mantine/core";
+import { Button, PasswordInput, Space, Switch, Text } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { api } from "../api.ts";
 import { notifications } from "@mantine/notifications";
@@ -73,9 +73,12 @@ function Index() {
           {...form.getInputProps("secret")}
         />
         <Space h="xs" />
-        <div>
-          <Checkbox
-            label="Sandbox"
+        <div className="flex items-center">
+          <label htmlFor="isDev" className="mr-2">
+            <Text size="md"> Use sandbox:</Text>
+          </label>
+          <Switch
+            id="isDev"
             {...form.getInputProps("isDev", {
               type: "checkbox",
             })}

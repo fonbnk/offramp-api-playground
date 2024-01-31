@@ -7,6 +7,7 @@ import { useApiCredentials } from "../hooks/useApiCredentials.ts";
 import { OrderStatus } from "../types.ts";
 import { Layout } from "../components/Layout";
 import { getExplorerUrl } from "../utils/explorers.ts";
+import * as dayjs from "dayjs";
 export const Route = createLazyFileRoute("/status/$orderId")({
   component: Index,
 });
@@ -156,7 +157,7 @@ function Index() {
                 ].map((item) => (
                   <Timeline.Item key={item.status} title={item.status}>
                     <Text size="xs" mt={4}>
-                      {new Date(item.changedAt).toISOString()}
+                      {dayjs(item.changedAt).format("DD.MM.YYYY HH:mm:ss")}
                     </Text>
                   </Timeline.Item>
                 ))}
