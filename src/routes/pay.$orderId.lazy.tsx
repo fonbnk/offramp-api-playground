@@ -73,7 +73,7 @@ function Index() {
       api.confirmOrder({
         clientId,
         secret,
-        isDev,
+        isDev: isDev as boolean,
         orderId: orderId as string,
         hash: values.hash,
       }),

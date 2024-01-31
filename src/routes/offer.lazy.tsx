@@ -101,7 +101,7 @@ function Index() {
       api.createOrder({
         clientId,
         secret,
-        isDev,
+        isDev: isDev as boolean,
         requiredFields: values.requiredFields,
         network: values.wallet?.split(":")[0] as Network,
         asset: values.wallet?.split(":")[1] as Asset,
