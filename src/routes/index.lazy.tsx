@@ -5,6 +5,7 @@ import { api } from "../api.ts";
 import { notifications } from "@mantine/notifications";
 import { useApiCredentials } from "../hooks/useApiCredentials.ts";
 import { useMutation } from "@tanstack/react-query";
+import { storage } from "../utils/storage.ts";
 
 export const Route = createLazyFileRoute("/")({
   component: Index,
@@ -36,6 +37,9 @@ function Index() {
     mutationKey: ["verifyCredentials"],
     mutationFn: (values: FormValues) => api.getCounties(values),
     onSuccess: () => {
+      storage.setSecret(form.values.secret);
+      storage.setClientId(form.values.clientId);
+      storage.setIsDev(form.values.isDev);
       navigate({
         to: "/offer",
       });
