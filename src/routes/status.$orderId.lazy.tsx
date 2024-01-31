@@ -1,4 +1,4 @@
-import { createLazyFileRoute, useNavigate } from "@tanstack/react-router";
+import { createLazyFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Skeleton, Space, Text, Timeline } from "@mantine/core";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../api.ts";
@@ -6,6 +6,7 @@ import { useEffect } from "react";
 import { useApiCredentials } from "../hooks/useApiCredentials.ts";
 import { OrderStatus } from "../types.ts";
 import { Layout } from "../components/Layout";
+import { getExplorerUrl } from "../utils/explorers.ts";
 export const Route = createLazyFileRoute("/status/$orderId")({
   component: Index,
 });
@@ -78,10 +79,37 @@ function Index() {
             <div>
               <Text>Transaction Hash</Text>
               <Text size="sm" fw={700}>
-                {orderQuery.data.hash}
+                <Link
+                  target="_blank"
+                  to={getExplorerUrl({
+                    network: orderQuery.data.network,
+                    hash: orderQuery.data.hash,
+                    isDev: credentials.isDev,
+                  })}
+                >
+                  {orderQuery.data.hash}
+                </Link>
               </Text>
               <Space h="md" />
             </div>
+            {orderQuery.data.refundHash && (
+              <div>
+                <Text>Refund Hash</Text>
+                <Text size="sm" fw={700}>
+                  <Link
+                    target="_blank"
+                    to={getExplorerUrl({
+                      network: orderQuery.data.network,
+                      hash: orderQuery.data.refundHash,
+                      isDev: credentials.isDev,
+                    })}
+                  >
+                    {orderQuery.data.refundHash}
+                  </Link>
+                </Text>
+                <Space h="md" />
+              </div>
+            )}
             <div>
               <Text>Paid from address</Text>
               <Text size="sm" fw={700}>
