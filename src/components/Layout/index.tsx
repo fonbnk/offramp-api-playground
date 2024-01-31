@@ -1,6 +1,7 @@
 import { ActionIcon, Paper, Space, Title } from "@mantine/core";
 import { IconArrowBack } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
+import logoSrc from "./assets/logo.svg";
 
 type Props = {
   children: React.ReactNode;
@@ -27,8 +28,15 @@ export const Layout = ({ children, title, backUrl }: Props) => {
         </Paper>
       </div>
       <div className="fixed left-1 bottom-1 text-5xl font-bold text-gray-600">
-        OFF-RAMP <br /> PLAYGROUND
+        <div>
+          OFF-RAMP <br /> PLAYGROUND
+        </div>
       </div>
+      <img
+        src={logoSrc}
+        alt="fonbnk logo"
+        className=" fixed right-2 bottom-2 w-[500px] opacity-5 "
+      />
     </div>
   );
 };
