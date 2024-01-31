@@ -165,6 +165,13 @@ function Index() {
             </div>
           </div>
         )}
+        {!orderQuery.data && !orderQuery.isLoading && (
+          <div>
+            <Text size="xl" fw={700} ta="center">
+              Order not found
+            </Text>
+          </div>
+        )}
       </div>
     </Layout>
   );

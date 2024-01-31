@@ -1,5 +1,12 @@
-import { createLazyFileRoute, useNavigate } from "@tanstack/react-router";
-import { Button, PasswordInput, Space, Switch, Text } from "@mantine/core";
+import { createLazyFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import {
+  Alert,
+  Button,
+  PasswordInput,
+  Space,
+  Switch,
+  Text,
+} from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { api } from "../api.ts";
 import { notifications } from "@mantine/notifications";
@@ -84,6 +91,15 @@ function Index() {
             })}
           />
         </div>
+        <Space h="xs" />
+        <Alert variant="outline" color="yellow" title="Attention">
+          In order to use a sandbox environment, you need to create a separate
+          account at{" "}
+          <Link to="https://sandbox-dashboard.fonbnk.com/" target="_blank">
+            https://sandbox-dashboard.fonbnk.com/
+          </Link>{" "}
+          and use credentials from there
+        </Alert>
         <Space h="xl" />
         <Button
           type="submit"
