@@ -1,24 +1,28 @@
 import { createLazyFileRoute, useNavigate } from "@tanstack/react-router";
 import { Button, Checkbox, PasswordInput, Space, Title } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import { storage } from "../utils/storage.ts";
 import { api } from "../api.ts";
 import { notifications } from "@mantine/notifications";
+import { useApiCredentials } from "../hooks/useApiCredentials.ts";
+import { useMutation } from "@tanstack/react-query";
 
 export const Route = createLazyFileRoute("/")({
   component: Index,
 });
 
+type FormValues = {
+  clientId: string;
+  secret: string;
+  isDev: boolean;
+};
 function Index() {
   const navigate = useNavigate({ from: "/" });
-  const form = useForm({
+  const credentials = useApiCredentials({ redirectOnNoCredentials: false });
+  const form = useForm<FormValues>({
     initialValues: {
-      clientId: storage.getClientId() || "",
-      secret: storage.getSecret() || "",
-      sandbox:
-        typeof storage.getIsDev() === "boolean"
-          ? (storage.getIsDev() as boolean)
-          : true,
+      clientId: credentials.clientId || "",
+      secret: credentials.secret || "",
+      isDev: credentials.isDev,
     },
 
     validate: {
@@ -27,35 +31,29 @@ function Index() {
         value.trim().length <= 0 && "Client Secret is required",
     },
   });
-  const onSubmit = (values: {
-    clientId: string;
-    secret: string;
-    sandbox: boolean;
-  }) => {
-    api
-      .getCounties({
-        clientId: values.clientId,
-        secret: values.secret,
-        isDev: values.sandbox,
-      })
-      .then(() => {
-        storage.setSecret(values.secret);
-        storage.setClientId(values.clientId);
-        storage.setIsDev(values.sandbox);
-        navigate({
-          to: "/offer",
-        });
-      })
-      .catch((e) => {
-        notifications.show({
-          title: "Failed to verify credentials",
-          message: e?.message || "Something went wrong",
-          color: "red",
-        });
+
+  const verifyCredentialsMutation = useMutation({
+    mutationKey: ["verifyCredentials"],
+    mutationFn: (values: FormValues) => api.getCounties(values),
+    onSuccess: () => {
+      navigate({
+        to: "/offer",
       });
-  };
+    },
+    onError: (e) => {
+      notifications.show({
+        title: "Failed to verify credentials",
+        message: e?.message || "Something went wrong",
+        color: "red",
+      });
+    },
+  });
   return (
-    <form onSubmit={form.onSubmit(onSubmit)}>
+    <form
+      onSubmit={form.onSubmit((values) =>
+        verifyCredentialsMutation.mutate(values),
+      )}
+    >
       <Title order={2}>Provide merchant credentials</Title>
       <Space h="md" />
       <PasswordInput
@@ -73,13 +71,18 @@ function Index() {
       <div>
         <Checkbox
           label="Sandbox"
-          {...form.getInputProps("sandbox", {
+          {...form.getInputProps("isDev", {
             type: "checkbox",
           })}
         />
       </div>
       <Space h="xl" />
-      <Button type="submit" fullWidth disabled={!form.isValid()}>
+      <Button
+        type="submit"
+        fullWidth
+        disabled={!form.isValid()}
+        loading={verifyCredentialsMutation.isPending}
+      >
         Save
       </Button>
     </form>

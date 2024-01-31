@@ -1,6 +1,4 @@
 import { createLazyFileRoute, useNavigate } from "@tanstack/react-router";
-import { storage } from "../utils/storage.ts";
-import { useEffect } from "react";
 import { useForm } from "@mantine/form";
 import {
   Button,
@@ -16,6 +14,8 @@ import { Asset, Network, OfframpType } from "../types.ts";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { api } from "../api.ts";
 import { notifications } from "@mantine/notifications";
+import { useApiCredentials } from "../hooks/useApiCredentials.ts";
+import { storage } from "../utils/storage.ts";
 
 type FormValues = {
   wallet: string;
@@ -31,25 +31,16 @@ export const Route = createLazyFileRoute("/offer")({
 
 function Index() {
   const navigate = useNavigate({ from: "/offer" });
-  const clientId = storage.getClientId() as string;
-  const secret = storage.getSecret() as string;
-  const isDev = storage.getIsDev();
-  useEffect(() => {
-    if (!clientId || !secret || typeof isDev !== "boolean") {
-      navigate({
-        to: "/",
-      });
-    }
-  }, [clientId, secret, isDev]);
+  const credentials = useApiCredentials({ redirectOnNoCredentials: true });
 
   const form = useForm<FormValues>({
     initialValues: {
-      wallet: "",
       amount: 3,
       requiredFields: {},
       country: "",
-      address: "",
       type: OfframpType.BANK,
+      wallet: storage.getWallet() ?? "",
+      address: storage.getAddress() ?? "",
     },
 
     validate: {
@@ -61,7 +52,7 @@ function Index() {
   });
   const countriesQuery = useQuery({
     queryKey: ["countries"],
-    queryFn: () => api.getCounties({ clientId, secret, isDev }),
+    queryFn: () => api.getCounties(credentials),
   });
   const bestOfferQuery = useQuery({
     queryKey: [
@@ -72,9 +63,7 @@ function Index() {
     ],
     queryFn: () =>
       api.getBestOffer({
-        clientId,
-        secret,
-        isDev: isDev as boolean,
+        ...credentials,
         amount: form.values.amount,
         country: form.values.country,
         type: form.values.type,
@@ -83,12 +72,7 @@ function Index() {
   });
   const walletsQuery = useQuery({
     queryKey: ["wallets"],
-    queryFn: () =>
-      api.getWallets({
-        clientId,
-        secret,
-        isDev,
-      }),
+    queryFn: () => api.getWallets(credentials),
   });
   const amountFiat = Math.floor(
     form.values.amount * (bestOfferQuery.data?.exchangeRate || 0),
@@ -99,9 +83,7 @@ function Index() {
   const createOrderMutation = useMutation({
     mutationFn: (values: FormValues) =>
       api.createOrder({
-        clientId,
-        secret,
-        isDev: isDev as boolean,
+        ...credentials,
         requiredFields: values.requiredFields,
         network: values.wallet?.split(":")[0] as Network,
         asset: values.wallet?.split(":")[1] as Asset,
@@ -110,6 +92,8 @@ function Index() {
         amount: values.amount,
       }),
     onSuccess: (data) => {
+      storage.setWallet(form.values.wallet);
+      storage.setAddress(form.values.address);
       navigate({
         to: `/pay/$orderId`,
         params: {

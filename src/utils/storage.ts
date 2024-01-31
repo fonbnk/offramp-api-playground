@@ -2,6 +2,8 @@ const StorageKeys = {
   SECRET: "secret",
   CLIENT_ID: "client_id",
   IS_DEV: "is_dev",
+  WALLET: "wallet",
+  ADDRESS: "address",
 };
 const getSecret = () => {
   return window.localStorage.getItem(StorageKeys.SECRET);
@@ -12,7 +14,7 @@ const getClientId = () => {
 };
 
 const getIsDev = () => {
-  let value = window.localStorage.getItem(StorageKeys.IS_DEV);
+  const value = window.localStorage.getItem(StorageKeys.IS_DEV);
   if (value === "true" || value === "false") {
     return value === "true";
   }
@@ -31,6 +33,22 @@ const setIsDev = (isDev: boolean) => {
   window.localStorage.setItem(StorageKeys.IS_DEV, isDev ? "true" : "false");
 };
 
+const setWallet = (wallet: string) => {
+  window.localStorage.setItem(StorageKeys.WALLET, wallet);
+};
+
+const getWallet = () => {
+  return window.localStorage.getItem(StorageKeys.WALLET);
+};
+
+const setAddress = (address: string) => {
+  window.localStorage.setItem(StorageKeys.ADDRESS, address);
+};
+
+const getAddress = () => {
+  return window.localStorage.getItem(StorageKeys.ADDRESS);
+};
+
 export const storage = {
   getSecret,
   getClientId,
@@ -38,4 +56,8 @@ export const storage = {
   setSecret,
   setClientId,
   setIsDev,
+  setWallet,
+  getWallet,
+  setAddress,
+  getAddress,
 };

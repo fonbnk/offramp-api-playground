@@ -14,10 +14,11 @@ import {
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { api } from "../api.ts";
 import { useEffect } from "react";
-import { storage } from "../utils/storage.ts";
 import { IconCopy, IconCheck } from "@tabler/icons-react";
 import { useForm } from "@mantine/form";
 import { notifications } from "@mantine/notifications";
+import { useApiCredentials } from "../hooks/useApiCredentials.ts";
+import { OrderStatus } from "../types.ts";
 export const Route = createLazyFileRoute("/pay/$orderId")({
   component: Index,
 });
@@ -35,32 +36,21 @@ function Index() {
     },
   });
   const navigate = useNavigate({ from: "/pay/$orderId" });
-  const clientId = storage.getClientId() as string;
-  const secret = storage.getSecret() as string;
-  const isDev = storage.getIsDev();
+  const credentials = useApiCredentials({ redirectOnNoCredentials: true });
   const { orderId } = Route.useParams();
-  useEffect(() => {
-    if (!clientId || !secret || typeof isDev !== "boolean") {
-      navigate({
-        to: "/",
-      });
-    }
-  }, [clientId, secret, isDev]);
   useEffect(() => {
     if (!orderId) {
       navigate({
         to: "/offer",
       });
     }
-  }, [orderId]);
+  }, [orderId, navigate]);
 
   const orderQuery = useQuery({
     queryKey: ["order", orderId],
     queryFn: () =>
       api.getOrder({
-        clientId,
-        secret,
-        isDev: isDev as boolean,
+        ...credentials,
         id: orderId as string,
       }),
     enabled: !!orderId,
@@ -71,9 +61,7 @@ function Index() {
     mutationKey: ["confirmOrder"],
     mutationFn: (values: FormValues) =>
       api.confirmOrder({
-        clientId,
-        secret,
-        isDev: isDev as boolean,
+        ...credentials,
         orderId: orderId as string,
         hash: values.hash,
       }),
@@ -107,7 +95,7 @@ function Index() {
           <Skeleton height={40} mt={10} radius="md" />
         </div>
       )}
-      {orderQuery.data && (
+      {orderQuery.data && orderQuery.data.status === OrderStatus.INITIATED && (
         <div>
           <div>
             <Text>Amount to pay: </Text>
@@ -136,24 +124,42 @@ function Index() {
               <CopyButtonWithIndicator value={orderQuery.data.toAddress} />
             </div>
           </div>
+          <Space h="sm" />
+          <Input.Wrapper
+            label="Transaction hash"
+            {...form.getInputProps("hash")}
+          >
+            <Input
+              placeholder="Paste transaction hash here"
+              {...form.getInputProps("hash")}
+            />
+          </Input.Wrapper>
+          <Space h="md" />
+          <Button
+            disabled={!form.isValid()}
+            fullWidth
+            type="submit"
+            loading={confirmOrderMutation.isPending}
+          >
+            Confirm order
+          </Button>
         </div>
       )}
-      <Space h="sm" />
-      <Input.Wrapper label="Transaction hash" {...form.getInputProps("hash")}>
-        <Input
-          placeholder="Paste transaction hash here"
-          {...form.getInputProps("hash")}
-        />
-      </Input.Wrapper>
+      {orderQuery.data && orderQuery.data.status !== OrderStatus.INITIATED && (
+        <div>
+          <Text size="xl" ta="center">
+            Order is not in the initiated state
+          </Text>
+        </div>
+      )}
+      {!orderQuery.data && !orderQuery.isLoading && (
+        <div>
+          <Text size="xl" ta="center">
+            Order not found
+          </Text>
+        </div>
+      )}
       <Space h="md" />
-      <Button
-        disabled={!form.isValid()}
-        fullWidth
-        type="submit"
-        loading={confirmOrderMutation.isPending}
-      >
-        Confirm order
-      </Button>
     </form>
   );
 }
