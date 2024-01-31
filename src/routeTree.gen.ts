@@ -10,6 +10,7 @@ import { Route as rootRoute } from './routes/__root'
 
 const OfferLazyImport = createFileRoute('/offer')()
 const IndexLazyImport = createFileRoute('/')()
+const StatusOrderIdLazyImport = createFileRoute('/status/$orderId')()
 const PayOrderIdLazyImport = createFileRoute('/pay/$orderId')()
 
 // Create/Update Routes
@@ -23,6 +24,13 @@ const IndexLazyRoute = IndexLazyImport.update({
   path: '/',
   getParentRoute: () => rootRoute,
 } as any).lazy(() => import('./routes/index.lazy').then((d) => d.Route))
+
+const StatusOrderIdLazyRoute = StatusOrderIdLazyImport.update({
+  path: '/status/$orderId',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() =>
+  import('./routes/status.$orderId.lazy').then((d) => d.Route),
+)
 
 const PayOrderIdLazyRoute = PayOrderIdLazyImport.update({
   path: '/pay/$orderId',
@@ -45,6 +53,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PayOrderIdLazyImport
       parentRoute: typeof rootRoute
     }
+    '/status/$orderId': {
+      preLoaderRoute: typeof StatusOrderIdLazyImport
+      parentRoute: typeof rootRoute
+    }
   }
 }
 
@@ -54,4 +66,5 @@ export const routeTree = rootRoute.addChildren([
   IndexLazyRoute,
   OfferLazyRoute,
   PayOrderIdLazyRoute,
+  StatusOrderIdLazyRoute,
 ])

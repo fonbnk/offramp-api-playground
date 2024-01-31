@@ -33,7 +33,7 @@ function Index() {
   const navigate = useNavigate({ from: "/offer" });
   const clientId = storage.getClientId() as string;
   const secret = storage.getSecret() as string;
-  const isDev = storage.getIsDev() as boolean;
+  const isDev = storage.getIsDev();
   useEffect(() => {
     if (!clientId || !secret || typeof isDev !== "boolean") {
       navigate({
@@ -74,7 +74,7 @@ function Index() {
       api.getBestOffer({
         clientId,
         secret,
-        isDev,
+        isDev: isDev as boolean,
         amount: form.values.amount,
         country: form.values.country,
         type: form.values.type,
@@ -162,6 +162,16 @@ function Index() {
           <Skeleton height={40} mt={10} radius="md" />
         </div>
       )}
+      {!bestOfferQuery.isLoading &&
+        !bestOfferQuery.data &&
+        form.values.amount &&
+        form.values.country && (
+          <div>
+            <Text size="xl" fw={700} ta="center">
+              No Offers Found
+            </Text>
+          </div>
+        )}
       {bestOfferQuery.data && (
         <div>
           <div>
