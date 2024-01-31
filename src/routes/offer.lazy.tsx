@@ -16,6 +16,7 @@ import { api } from "../api.ts";
 import { notifications } from "@mantine/notifications";
 import { useApiCredentials } from "../hooks/useApiCredentials.ts";
 import { storage } from "../utils/storage.ts";
+import { Layout } from "../components/Layout";
 
 type FormValues = {
   wallet: string;
@@ -111,117 +112,122 @@ function Index() {
   });
 
   return (
-    <form
-      onSubmit={form.onSubmit((values) => createOrderMutation.mutate(values))}
-    >
-      <Title order={2}>Create Order</Title>
-      <Space h="md" />
-      <Select
-        label="Country"
-        disabled={!countriesQuery.data?.length}
-        data={
-          countriesQuery.data
-            ? countriesQuery.data.map((i) => ({
-                value: i.countryIsoCode,
-                label: i.name,
-              }))
-            : []
-        }
-        {...form.getInputProps("country")}
-      />
-      <Space h="sm" />
-      <Select
-        label="Off-ramp Type"
-        data={Object.values(OfframpType)}
-        {...form.getInputProps("type")}
-      />
-      <Space h="sm" />
-      <NumberInput label="Order amount USD" {...form.getInputProps("amount")} />
-      <Space h="sm" />
-      {bestOfferQuery.isLoading && !bestOfferQuery.data && (
-        <div>
-          <Skeleton height={40} mt={10} radius="md" />
-          <Skeleton height={40} mt={10} radius="md" />
-          <Skeleton height={40} mt={10} radius="md" />
-          <Skeleton height={40} mt={10} radius="md" />
-        </div>
-      )}
-      {!bestOfferQuery.isLoading &&
-        !bestOfferQuery.data &&
-        form.values.amount &&
-        form.values.country && (
+    <Layout title="Create Order" backUrl="/">
+      <form
+        onSubmit={form.onSubmit((values) => createOrderMutation.mutate(values))}
+      >
+        <Select
+          label="Country"
+          disabled={!countriesQuery.data?.length}
+          data={
+            countriesQuery.data
+              ? countriesQuery.data.map((i) => ({
+                  value: i.countryIsoCode,
+                  label: i.name,
+                }))
+              : []
+          }
+          {...form.getInputProps("country")}
+        />
+        <Space h="sm" />
+        <Select
+          label="Off-ramp Type"
+          data={Object.values(OfframpType)}
+          {...form.getInputProps("type")}
+        />
+        <Space h="sm" />
+        <NumberInput
+          label="Order amount USD"
+          {...form.getInputProps("amount")}
+        />
+        <Space h="sm" />
+        {bestOfferQuery.isLoading && !bestOfferQuery.data && (
           <div>
-            <Text size="xl" fw={700} ta="center">
-              No Offers Found
-            </Text>
+            <Skeleton height={40} mt={10} radius="md" />
+            <Skeleton height={40} mt={10} radius="md" />
+            <Skeleton height={40} mt={10} radius="md" />
+            <Skeleton height={40} mt={10} radius="md" />
           </div>
         )}
-      {bestOfferQuery.data && (
-        <div>
+        {!bestOfferQuery.isLoading &&
+          !bestOfferQuery.data &&
+          form.values.amount &&
+          form.values.country && (
+            <div>
+              <Text size="xl" fw={700} ta="center">
+                No Offers Found
+              </Text>
+            </div>
+          )}
+        {bestOfferQuery.data && (
           <div>
-            <Text>Will receive:</Text>
-            <Text size="xl" fw={700}>
-              {amountFiat} {selectedCountry?.currencyIsoCode}
-            </Text>
+            <div>
+              <Text>Will receive:</Text>
+              <Text size="xl" fw={700}>
+                {amountFiat} {selectedCountry?.currencyIsoCode}
+              </Text>
+            </div>
+            <Space h="xl" />
+            {Object.keys(bestOfferQuery.data.requiredFields).length && (
+              <Title order={4}>Additional information required:</Title>
+            )}
+            <Space h="sm" />
+            {Object.entries(bestOfferQuery.data.requiredFields).map(
+              ([key, settings]) => {
+                return (
+                  <div key={key}>
+                    <Space h="sm" />
+                    {settings.type === "string" && (
+                      <Input.Wrapper label={settings.label}>
+                        <Input
+                          {...form.getInputProps(`requiredFields.${key}`)}
+                        />
+                      </Input.Wrapper>
+                    )}
+                    {settings.type === "enum" && (
+                      <Select
+                        label={settings.label}
+                        data={settings.options}
+                        searchable
+                        {...form.getInputProps(`requiredFields.${key}`)}
+                      />
+                    )}
+                  </div>
+                );
+              },
+            )}
+            <Space h="xl" />
+            <Title order={4}>Your wallet details</Title>
+            <Space h="md" />
+            <Select
+              label="Network"
+              disabled={!walletsQuery.data?.length}
+              data={
+                walletsQuery.data
+                  ? walletsQuery.data.map((i) => ({
+                      value: i.network + ":" + i.asset,
+                      label: i.network + " " + i.asset,
+                    }))
+                  : []
+              }
+              {...form.getInputProps("wallet")}
+            />
+            <Space h="sm" />
+            <Input.Wrapper label="Address" {...form.getInputProps("address")}>
+              <Input {...form.getInputProps("address")} />
+            </Input.Wrapper>
+            <Space h="md" />
+            <Button
+              type="submit"
+              fullWidth
+              disabled={!bestOfferQuery.data}
+              loading={createOrderMutation.isPending}
+            >
+              Pay
+            </Button>
           </div>
-          <Space h="xl" />
-          {Object.keys(bestOfferQuery.data.requiredFields).length && (
-            <Title order={4}>Additional information required:</Title>
-          )}
-          <Space h="sm" />
-          {Object.entries(bestOfferQuery.data.requiredFields).map(
-            ([key, settings]) => {
-              return (
-                <div key={key}>
-                  <Space h="sm" />
-                  {settings.type === "string" && (
-                    <Input.Wrapper label={settings.label}>
-                      <Input {...form.getInputProps(`requiredFields.${key}`)} />
-                    </Input.Wrapper>
-                  )}
-                  {settings.type === "enum" && (
-                    <Select
-                      label={settings.label}
-                      data={settings.options}
-                      searchable
-                      {...form.getInputProps(`requiredFields.${key}`)}
-                    />
-                  )}
-                </div>
-              );
-            },
-          )}
-          <Space h="xl" />
-          <Title order={4}>Your wallet details</Title>
-          <Space h="md" />
-          <Select
-            label="Network"
-            disabled={!walletsQuery.data?.length}
-            data={
-              walletsQuery.data
-                ? walletsQuery.data.map((i) => ({
-                    value: i.network + ":" + i.asset,
-                    label: i.network + " " + i.asset,
-                  }))
-                : []
-            }
-            {...form.getInputProps("wallet")}
-          />
-          <Space h="sm" />
-          <Input.Wrapper label="Address" {...form.getInputProps("address")}>
-            <Input {...form.getInputProps("address")} />
-          </Input.Wrapper>
-          <Space h="md" />
-          <Button
-            type="submit"
-            fullWidth
-            disabled={!bestOfferQuery.data}
-            loading={createOrderMutation.isPending}
-          >
-            Pay
-          </Button>
-        </div>
-      )}
-    </form>
+        )}
+      </form>
+    </Layout>
   );
 }

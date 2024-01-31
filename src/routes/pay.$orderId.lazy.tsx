@@ -2,7 +2,6 @@ import { createLazyFileRoute, useNavigate } from "@tanstack/react-router";
 import {
   Skeleton,
   Space,
-  Title,
   Text,
   CopyButton,
   ActionIcon,
@@ -19,6 +18,7 @@ import { useForm } from "@mantine/form";
 import { notifications } from "@mantine/notifications";
 import { useApiCredentials } from "../hooks/useApiCredentials.ts";
 import { OrderStatus } from "../types.ts";
+import { Layout } from "../components/Layout";
 export const Route = createLazyFileRoute("/pay/$orderId")({
   component: Index,
 });
@@ -82,85 +82,89 @@ function Index() {
     },
   });
   return (
-    <form
-      onSubmit={form.onSubmit((values) => confirmOrderMutation.mutate(values))}
-    >
-      <Title order={2}>Pay</Title>
-      <Space h="md" />
-      {orderQuery.isLoading && !orderQuery.data && (
-        <div>
-          <Skeleton height={40} mt={10} radius="md" />
-          <Skeleton height={40} mt={10} radius="md" />
-          <Skeleton height={40} mt={10} radius="md" />
-          <Skeleton height={40} mt={10} radius="md" />
-        </div>
-      )}
-      {orderQuery.data && orderQuery.data.status === OrderStatus.INITIATED && (
-        <div>
+    <Layout title="Pay" backUrl="/offer">
+      <form
+        onSubmit={form.onSubmit((values) =>
+          confirmOrderMutation.mutate(values),
+        )}
+      >
+        {orderQuery.isLoading && !orderQuery.data && (
           <div>
-            <Text>Amount to pay: </Text>
-            <div className="flex items-center">
-              <Text fw={700}>
-                {orderQuery.data.amountUsd} {orderQuery.data.network}{" "}
-                {orderQuery.data.asset}
-              </Text>
-              <CopyButtonWithIndicator value={orderQuery.data.amountUsd} />
-            </div>
+            <Skeleton height={40} mt={10} radius="md" />
+            <Skeleton height={40} mt={10} radius="md" />
+            <Skeleton height={40} mt={10} radius="md" />
+            <Skeleton height={40} mt={10} radius="md" />
           </div>
-          <Space h="sm" />
+        )}
+        {orderQuery.data &&
+          orderQuery.data.status === OrderStatus.INITIATED && (
+            <div>
+              <div>
+                <Text>Amount to pay: </Text>
+                <div className="flex items-center">
+                  <Text fw={700}>
+                    {orderQuery.data.amountUsd} {orderQuery.data.network}{" "}
+                    {orderQuery.data.asset}
+                  </Text>
+                  <CopyButtonWithIndicator value={orderQuery.data.amountUsd} />
+                </div>
+              </div>
+              <Space h="sm" />
+              <div>
+                <Text>Payment expected from address:</Text>
+                <Text fw={700} size="sm">
+                  {orderQuery.data.fromAddress}
+                </Text>
+              </div>
+              <Space h="sm" />
+              <div>
+                <Text>Payment expected to address:</Text>
+                <div className="flex items-center">
+                  <Text fw={700} size="sm">
+                    {orderQuery.data.toAddress}
+                  </Text>
+                  <CopyButtonWithIndicator value={orderQuery.data.toAddress} />
+                </div>
+              </div>
+              <Space h="sm" />
+              <Input.Wrapper
+                label="Transaction hash"
+                {...form.getInputProps("hash")}
+              >
+                <Input
+                  placeholder="Paste transaction hash here"
+                  {...form.getInputProps("hash")}
+                />
+              </Input.Wrapper>
+              <Space h="md" />
+              <Button
+                disabled={!form.isValid()}
+                fullWidth
+                type="submit"
+                loading={confirmOrderMutation.isPending}
+              >
+                Confirm order
+              </Button>
+            </div>
+          )}
+        {orderQuery.data &&
+          orderQuery.data.status !== OrderStatus.INITIATED && (
+            <div>
+              <Text size="xl" ta="center">
+                Order is not in the initiated state
+              </Text>
+            </div>
+          )}
+        {!orderQuery.data && !orderQuery.isLoading && (
           <div>
-            <Text>Payment expected from address:</Text>
-            <Text fw={700} size="sm">
-              {orderQuery.data.fromAddress}
+            <Text size="xl" ta="center">
+              Order not found
             </Text>
           </div>
-          <Space h="sm" />
-          <div>
-            <Text>Payment expected to address:</Text>
-            <div className="flex items-center">
-              <Text fw={700} size="sm">
-                {orderQuery.data.toAddress}
-              </Text>
-              <CopyButtonWithIndicator value={orderQuery.data.toAddress} />
-            </div>
-          </div>
-          <Space h="sm" />
-          <Input.Wrapper
-            label="Transaction hash"
-            {...form.getInputProps("hash")}
-          >
-            <Input
-              placeholder="Paste transaction hash here"
-              {...form.getInputProps("hash")}
-            />
-          </Input.Wrapper>
-          <Space h="md" />
-          <Button
-            disabled={!form.isValid()}
-            fullWidth
-            type="submit"
-            loading={confirmOrderMutation.isPending}
-          >
-            Confirm order
-          </Button>
-        </div>
-      )}
-      {orderQuery.data && orderQuery.data.status !== OrderStatus.INITIATED && (
-        <div>
-          <Text size="xl" ta="center">
-            Order is not in the initiated state
-          </Text>
-        </div>
-      )}
-      {!orderQuery.data && !orderQuery.isLoading && (
-        <div>
-          <Text size="xl" ta="center">
-            Order not found
-          </Text>
-        </div>
-      )}
-      <Space h="md" />
-    </form>
+        )}
+        <Space h="md" />
+      </form>
+    </Layout>
   );
 }
 

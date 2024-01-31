@@ -1,13 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <link rel="icon" type="image/svg+xml" href="/logo.svg" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Fonbnk merchant dashboard</title>
-    </head>
-    <body>
-        <div id="root"></div>
-        <script type="module" src="/src/main.tsx"></script>
-    </body>
-</html>
+<svg width="28" height="35" viewBox="0 0 28 35" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_2810_2233)">
+<path fill-rule="evenodd" clip-rule="evenodd" d="M13.9724 29.4478C9.2537 29.4478 5.41467 25.5855 5.41467 20.838C5.41467 16.0905 9.2537 12.2282 13.9724 12.2282C16.1908 12.2282 18.2145 13.0822 19.7365 14.4802L20.0139 14.7595L20.0206 14.7528C21.5702 16.3118 22.5299 18.4643 22.5299 20.838C22.5299 25.5855 18.6909 29.4478 13.9724 29.4478ZM23.4851 10.5429L13.0061 0H5.344L12.1953 6.89305C5.3177 7.77146 0 13.6799 0 20.838C0 28.6017 6.25564 34.8955 13.9724 34.8955C21.6891 34.8955 27.9446 28.6017 27.9446 20.838C27.9446 16.7718 26.2281 13.1098 23.4851 10.5429Z" fill="#009F4E"/>
+</g>
+<defs>
+<clipPath id="clip0_2810_2233">
+<rect width="28" height="35" fill="white"/>
+</clipPath>
+</defs>
+</svg>

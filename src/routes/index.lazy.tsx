@@ -1,11 +1,12 @@
 import { createLazyFileRoute, useNavigate } from "@tanstack/react-router";
-import { Button, Checkbox, PasswordInput, Space, Title } from "@mantine/core";
+import { Button, Checkbox, PasswordInput, Space } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { api } from "../api.ts";
 import { notifications } from "@mantine/notifications";
 import { useApiCredentials } from "../hooks/useApiCredentials.ts";
 import { useMutation } from "@tanstack/react-query";
 import { storage } from "../utils/storage.ts";
+import { Layout } from "../components/Layout";
 
 export const Route = createLazyFileRoute("/")({
   component: Index,
@@ -53,42 +54,43 @@ function Index() {
     },
   });
   return (
-    <form
-      onSubmit={form.onSubmit((values) =>
-        verifyCredentialsMutation.mutate(values),
-      )}
-    >
-      <Title order={2}>Provide merchant credentials</Title>
-      <Space h="md" />
-      <PasswordInput
-        label="Client ID"
-        description="Find it in the merchant dashbaord"
-        {...form.getInputProps("clientId")}
-      />
-      <Space h="xs" />
-      <PasswordInput
-        label="Client Secret"
-        description="Find it in the merchant dashbaord"
-        {...form.getInputProps("secret")}
-      />
-      <Space h="xs" />
-      <div>
-        <Checkbox
-          label="Sandbox"
-          {...form.getInputProps("isDev", {
-            type: "checkbox",
-          })}
-        />
-      </div>
-      <Space h="xl" />
-      <Button
-        type="submit"
-        fullWidth
-        disabled={!form.isValid()}
-        loading={verifyCredentialsMutation.isPending}
+    <Layout title="Provide merchant credentials">
+      <form
+        onSubmit={form.onSubmit((values) =>
+          verifyCredentialsMutation.mutate(values),
+        )}
       >
-        Save
-      </Button>
-    </form>
+        <Space h="md" />
+        <PasswordInput
+          label="Client ID"
+          description="Find it in the merchant dashbaord"
+          {...form.getInputProps("clientId")}
+        />
+        <Space h="xs" />
+        <PasswordInput
+          label="Client Secret"
+          description="Find it in the merchant dashbaord"
+          {...form.getInputProps("secret")}
+        />
+        <Space h="xs" />
+        <div>
+          <Checkbox
+            label="Sandbox"
+            {...form.getInputProps("isDev", {
+              type: "checkbox",
+            })}
+          />
+        </div>
+        <Space h="xl" />
+        <Button
+          type="submit"
+          fullWidth
+          disabled={!form.isValid()}
+          loading={verifyCredentialsMutation.isPending}
+        >
+          Save
+        </Button>
+      </form>
+    </Layout>
   );
 }
