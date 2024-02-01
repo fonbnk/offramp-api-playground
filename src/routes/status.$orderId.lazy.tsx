@@ -7,7 +7,7 @@ import { useApiCredentials } from "../hooks/useApiCredentials.ts";
 import { OrderStatus } from "../types.ts";
 import { Layout } from "../components/Layout";
 import { getExplorerUrl } from "../utils/explorers.ts";
-import * as dayjs from "dayjs";
+import dayjs from "dayjs";
 export const Route = createLazyFileRoute("/status/$orderId")({
   component: Index,
 });
@@ -155,11 +155,11 @@ function Index() {
               <Space h="md" />
               <Timeline
                 color="green"
-                active={orderQuery.data.statusHistory.length}
+                active={orderQuery.data?.statusHistory?.length}
                 bulletSize={24}
                 lineWidth={2}
               >
-                {orderQuery.data.statusHistory.map((item) => (
+                {orderQuery.data?.statusHistory?.map((item) => (
                   <Timeline.Item key={item.status} title={item.status}>
                     <Text size="xs" mt={4}>
                       {dayjs(item.changedAt).format("DD.MM.YYYY HH:mm:ss")}
@@ -174,7 +174,7 @@ function Index() {
               OrderStatus.REFUND_FAILED,
               OrderStatus.TRANSACTION_FAILED,
               OrderStatus.OFFRAMP_SUCCESS,
-            ].includes(orderQuery.data.status) && (
+            ].includes(orderQuery.data?.status) && (
               <div className="flex items-center pt-5">
                 <Loader color="green" className="mr-2" />
                 <Text>Order in progress...</Text>
