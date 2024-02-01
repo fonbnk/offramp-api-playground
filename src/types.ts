@@ -2,6 +2,10 @@ export type Country = {
   countryIsoCode: string;
   name: string;
   currencyIsoCode: string;
+  offrampTypes: {
+    type: OfframpType;
+    name: string;
+  }[];
 };
 
 export enum Network {
@@ -73,6 +77,7 @@ export type RequiredFields = Record<
 export type Offer = {
   _id: string;
   countryIsoCode: string;
+  currencyIsoCode: string;
   exchangeRate: number;
   transferLimitationsFiat?: TransferLimitations;
   transferLimitationsUsd?: TransferLimitations;
@@ -82,9 +87,9 @@ export type Offer = {
 
 export enum OrderStatus {
   INITIATED = "initiated",
-  PENDING = "pending",
-  TRANSACTION_COMPLETED = "transaction_completed",
-  COMPLETED = "completed",
+  AWAITING_TRANSACTION_CONFIRMATION = "awaiting_transaction_confirmation",
+  TRANSACTION_CONFIRMED = "transaction_confirmed",
+  OFFRAMP_SUCCESS = "offramp_success",
   TRANSACTION_FAILED = "transaction_failed",
   OFFRAMP_PENDING = "offramp_pending",
   OFFRAMP_FAILED = "offramp_failed",
@@ -110,5 +115,7 @@ export type Order = {
   hash: string;
   refundHash: string;
   statusHistory: { status: OrderStatus; changedAt: string }[];
-  requiredFields: Record<string, any>;
+  requiredFields: Record<string, string>;
+  countryIsoCode: string;
+  currencyIsoCode: string;
 };

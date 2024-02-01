@@ -92,13 +92,16 @@ function Index() {
           />
         </div>
         <Space h="xs" />
-        <Alert variant="outline" color="yellow" title="Attention">
-          In order to use a sandbox environment, you need to create a separate
-          account at{" "}
+        <Alert title="Attention">
+          In order to use a sandbox environment, you need to create an account
+          at{" "}
           <Link to="https://sandbox-dashboard.fonbnk.com/" target="_blank">
             https://sandbox-dashboard.fonbnk.com/
           </Link>{" "}
-          and use credentials from there
+          and use credentials from there. For production, use{" "}
+          <Link to="https://dashboard.fonbnk.com/" target="_blank">
+            https://dashboard.fonbnk.com/
+          </Link>
         </Alert>
         <Space h="xl" />
         <Button

@@ -7,8 +7,8 @@ import {
   Select,
   Skeleton,
   Space,
-  Title,
   Text,
+  Title,
 } from "@mantine/core";
 import { Asset, Network, OfframpType } from "../types.ts";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -25,7 +25,7 @@ type FormValues = {
   requiredFields: Record<string, string>;
   country: string;
   address: string;
-  type: OfframpType;
+  type: OfframpType | "";
 };
 export const Route = createLazyFileRoute("/offer")({
   component: Index,
@@ -34,13 +34,12 @@ export const Route = createLazyFileRoute("/offer")({
 function Index() {
   const navigate = useNavigate({ from: "/offer" });
   const credentials = useApiCredentials({ redirectOnNoCredentials: true });
-
   const form = useForm<FormValues>({
     initialValues: {
       amount: 3,
       requiredFields: {},
       country: "",
-      type: OfframpType.BANK,
+      type: "",
       wallet: storage.getWallet() ?? "",
       address: storage.getAddress() ?? "",
     },
@@ -49,16 +48,31 @@ function Index() {
       wallet: (value) => value.trim().length <= 0 && "Wallet type is required",
       address: (value) =>
         value.trim().length <= 0 && "Wallet address is required",
-      amount: (value) => value <= 0 && "Amount is required",
+      amount: (value) => {
+        if (value <= 0) {
+          return "Amount is required";
+        }
+      },
+      type: (value) => {
+        if (!value) {
+          return "Type is required";
+        }
+      },
     },
   });
   const countriesQuery = useQuery({
     queryKey: ["countries"],
     queryFn: () => api.getCounties(credentials),
   });
+  const selectedCountry = countriesQuery.data?.find(
+    (i) => i.countryIsoCode === form.values.country,
+  );
   useEffect(() => {
     if (countriesQuery.data?.length && !form.values.country) {
       form.setFieldValue("country", countriesQuery.data[0].countryIsoCode);
+      if (!form.values.type) {
+        form.setFieldValue("type", countriesQuery.data[0].offrampTypes[0].type);
+      }
     }
   }, [countriesQuery.data, form.values.country, form]);
   const bestOfferQuery = useQuery({
@@ -73,7 +87,7 @@ function Index() {
         ...credentials,
         amount: form.values.amount,
         country: form.values.country,
-        type: form.values.type,
+        type: form.values.type as OfframpType,
       }),
     enabled: Boolean(form.values.country && form.values.type),
   });
@@ -84,9 +98,7 @@ function Index() {
   const amountFiat = Math.floor(
     form.values.amount * (bestOfferQuery.data?.exchangeRate || 0),
   );
-  const selectedCountry = countriesQuery.data?.find(
-    (i) => i.countryIsoCode === form.values.country,
-  );
+
   const createOrderMutation = useMutation({
     mutationFn: (values: FormValues) =>
       api.createOrder({
@@ -138,7 +150,12 @@ function Index() {
         <Space h="sm" />
         <Select
           label="Off-ramp Type"
-          data={Object.values(OfframpType)}
+          data={
+            selectedCountry?.offrampTypes?.map((i) => ({
+              label: i.name,
+              value: i.type,
+            })) || []
+          }
           {...form.getInputProps("type")}
         />
         <Space h="sm" />
@@ -195,7 +212,6 @@ function Index() {
             {Object.keys(bestOfferQuery.data.requiredFields).length && (
               <Title order={4}>Additional information required:</Title>
             )}
-            <Space h="sm" />
             {Object.entries(bestOfferQuery.data.requiredFields).map(
               ([key, settings]) => {
                 return (

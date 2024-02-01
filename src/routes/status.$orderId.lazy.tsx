@@ -1,5 +1,5 @@
 import { createLazyFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Skeleton, Space, Text, Timeline } from "@mantine/core";
+import { Badge, Loader, Skeleton, Space, Text, Timeline } from "@mantine/core";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../api.ts";
 import { useEffect } from "react";
@@ -37,7 +37,7 @@ function Index() {
         [
           OrderStatus.REFUNDED,
           OrderStatus.REFUND_FAILED,
-          OrderStatus.COMPLETED,
+          OrderStatus.OFFRAMP_SUCCESS,
           OrderStatus.TRANSACTION_FAILED,
         ].includes(data?.state?.data?.status as OrderStatus)
       ) {
@@ -78,7 +78,7 @@ function Index() {
               <Space h="md" />
             </div>
             <div>
-              <Text>Transaction Hash</Text>
+              <Text>Payment transaction hash</Text>
               <Text size="sm" fw={700}>
                 <Link
                   target="_blank"
@@ -126,16 +126,27 @@ function Index() {
               <Space h="md" />
             </div>
             <div>
-              <Text>Fiat amount</Text>
+              <Text>Fiat amount to receive</Text>
               <Text size="sm" fw={700}>
-                {orderQuery.data.amountFiat}
+                {orderQuery.data.amountFiat} {orderQuery.data.currencyIsoCode}
               </Text>
               <Space h="md" />
             </div>
+            {orderQuery.data.requiredFields?.buyerBankAccountNumber && (
+              <div>
+                <Text>Bank account number</Text>
+                <Text size="sm" fw={700}>
+                  {orderQuery.data.requiredFields.buyerBankAccountNumber}
+                </Text>
+                <Space h="md" />
+              </div>
+            )}
             <div>
               <Text>Status</Text>
               <Text size="sm" fw={700}>
-                {orderQuery.data.status}
+                <Badge color={getStatusColor(orderQuery.data.status)}>
+                  {orderQuery.data.status}
+                </Badge>
               </Text>
               <Space h="md" />
             </div>{" "}
@@ -148,13 +159,7 @@ function Index() {
                 bulletSize={24}
                 lineWidth={2}
               >
-                {[
-                  {
-                    status: OrderStatus.INITIATED,
-                    changedAt: orderQuery.data.createdAt,
-                  },
-                  ...orderQuery.data.statusHistory,
-                ].map((item) => (
+                {orderQuery.data.statusHistory.map((item) => (
                   <Timeline.Item key={item.status} title={item.status}>
                     <Text size="xs" mt={4}>
                       {dayjs(item.changedAt).format("DD.MM.YYYY HH:mm:ss")}
@@ -163,6 +168,18 @@ function Index() {
                 ))}
               </Timeline>
             </div>
+            {![
+              OrderStatus.EXPIRED,
+              OrderStatus.REFUNDED,
+              OrderStatus.REFUND_FAILED,
+              OrderStatus.TRANSACTION_FAILED,
+              OrderStatus.OFFRAMP_SUCCESS,
+            ].includes(orderQuery.data.status) && (
+              <div className="flex items-center pt-5">
+                <Loader color="green" className="mr-2" />
+                <Text>Order in progress...</Text>
+              </div>
+            )}
           </div>
         )}
         {!orderQuery.data && !orderQuery.isLoading && (
@@ -175,4 +192,34 @@ function Index() {
       </div>
     </Layout>
   );
+}
+
+function getStatusColor(status: OrderStatus) {
+  switch (status) {
+    case OrderStatus.INITIATED:
+      return "gray";
+    case OrderStatus.AWAITING_TRANSACTION_CONFIRMATION:
+      return "orange";
+    case OrderStatus.TRANSACTION_CONFIRMED:
+      return "orange";
+    case OrderStatus.TRANSACTION_FAILED:
+      return "red";
+    case OrderStatus.OFFRAMP_SUCCESS:
+      return "green";
+    case OrderStatus.OFFRAMP_PENDING:
+      return "orange";
+    case OrderStatus.REFUNDING:
+      return "orange";
+    case OrderStatus.EXPIRED:
+      return "red";
+    case OrderStatus.REFUNDED:
+      return "purple";
+    case OrderStatus.REFUND_FAILED:
+      return "red";
+    case OrderStatus.OFFRAMP_FAILED:
+      return "red";
+
+    default:
+      return "gray";
+  }
 }
