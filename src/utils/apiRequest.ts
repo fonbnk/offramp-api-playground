@@ -11,11 +11,11 @@ export const apiRequest = async <T>({
   method: "GET" | "POST";
   secret: string;
   clientId: string;
-  body?: any;
+  body?: Record<string, string | number | Record<string, string | number>>;
 }) => {
   const endpint = isDev
     ? "https://sandbox-api.fonbnk.com"
-    : "https://api.fonbnk.com";
+    : "https://aten.fonbnk-services.com";
   const timestamp = Date.now();
   const response = await fetch(`${endpint}${path}`, {
     method,
