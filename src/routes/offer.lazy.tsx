@@ -17,7 +17,7 @@ import { notifications } from "@mantine/notifications";
 import { useApiCredentials } from "../hooks/useApiCredentials.ts";
 import { storage } from "../utils/storage.ts";
 import { Layout } from "../components/Layout";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 type FormValues = {
   wallet: string;
@@ -91,6 +91,13 @@ function Index() {
       }),
     enabled: Boolean(form.values.country && form.values.type),
   });
+  const oldOfferId = useRef(bestOfferQuery.data?._id);
+  useEffect(() => {
+    if (bestOfferQuery.data?._id !== oldOfferId.current) {
+      form.setFieldValue("requiredFields", {});
+    }
+    oldOfferId.current = bestOfferQuery.data?._id;
+  }, [bestOfferQuery.data?._id]);
   const walletsQuery = useQuery({
     queryKey: ["wallets"],
     queryFn: () => api.getWallets(credentials),
